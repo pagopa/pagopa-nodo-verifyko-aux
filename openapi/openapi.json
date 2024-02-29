@@ -4,7 +4,7 @@
     "description": "A service that permits to handle stored Verify KO events in hot-storage and cold-storage.",
     "termsOfService": "https://www.pagopa.gov.it/",
     "title": "nodo-verifyko-aux",
-    "version": "0.2.0"
+    "version": "1.0.0"
   },
   "servers": [
     {
