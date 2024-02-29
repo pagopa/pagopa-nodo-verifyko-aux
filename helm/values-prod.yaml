@@ -69,10 +69,12 @@ microservice-chart:
     APP_LOGGING_LEVEL: 'DEBUG'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
-
-
+    VERIFYKO_COLDSTORAGE_TABLE: 'events'
+    VERIFYKO_COLDSTORAGE_BLOBCONTAINER: 'payload'
+    VERIFYKO_HOTSTORAGE_DATABASE: 'nodo_verifyko'
+    VERIFYKO_HOTSTORAGE_ENABLEQUERYMETRICS: 'false'
     OTEL_SERVICE_NAME: "pagopa-nodo-verifyko-aux"
-    OTEL_RESOURCE_ATTRIBUTES: "service.environment=dev"
+    OTEL_RESOURCE_ATTRIBUTES: "service.environment=prod"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
@@ -82,6 +84,9 @@ microservice-chart:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: "azure-insight-connection-string"
     OTEL_EXPORTER_OTLP_HEADERS: "elastic-apm-secret-token"
+    VERIFYKO_COLDSTORAGE_CONNECTION: "verifyko-tablestorage-connection-string"
+    VERIFYKO_HOTSTORAGE_URI: "verifyko-datastore-cosmos-uri"
+    VERIFYKO_HOTSTORAGE_KEY: "cosmos-verifyko-account-key"
   keyvault:
     name: "pagopa-p-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

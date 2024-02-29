@@ -2,7 +2,6 @@ package it.gov.pagopa.nodoverifykoaux.config;
 
 import it.gov.pagopa.nodoverifykoaux.exception.AppError;
 import it.gov.pagopa.nodoverifykoaux.model.ProblemJson;
-import it.gov.pagopa.nodoverifykoaux.util.CommonUtility;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -23,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static it.gov.pagopa.nodoverifykoaux.util.CommonUtility.deNull;
 
 
 @Aspect
@@ -83,7 +84,7 @@ public class LoggingAspect {
         Map<String, String> params = new HashMap<>();
         int i = 0;
         for (var paramName : codeSignature.getParameterNames()) {
-            params.put(paramName, CommonUtility.deNull(joinPoint.getArgs()[i++]));
+            params.put(paramName, deNull(joinPoint.getArgs()[i++]));
         }
         return params;
     }

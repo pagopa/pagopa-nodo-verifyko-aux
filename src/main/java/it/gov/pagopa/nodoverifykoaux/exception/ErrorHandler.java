@@ -1,8 +1,5 @@
 package it.gov.pagopa.nodoverifykoaux.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
 import it.gov.pagopa.nodoverifykoaux.model.ProblemJson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
@@ -19,7 +16,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,8 +36,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
      * @return a {@link ProblemJson} as response with the cause and with a 400 as HTTP status
      */
     @Override
-    public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-                                                               HttpHeaders headers, HttpStatus status, WebRequest request) {
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                                                                  HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.warn("Input not readable: ", ex);
         var errorResponse = ProblemJson.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -61,9 +57,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
      * @return a {@link ProblemJson} as response with the cause and with a 400 as HTTP status
      */
     @Override
-    public ResponseEntity<Object> handleMissingServletRequestParameter(
-            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex,
+                                                                          HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.warn("Missing request parameter: ", ex);
         var errorResponse = ProblemJson.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -72,7 +67,6 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
 
     /**
      * Customize the response for TypeMismatchException.
@@ -84,8 +78,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
      * @return a {@code ResponseEntity} instance
      */
     @Override
-    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
-                                                        HttpStatus status, WebRequest request) {
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex,
+                                                        HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.warn("Type mismatch: ", ex);
         var errorResponse = ProblemJson.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -95,6 +89,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
 
     /**
      * Handle if validation constraints are unsatisfied
@@ -133,42 +128,6 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
-
-    /**
-     * Handle if a {@link FeignException} is raised
-     *
-     * @param ex      {@link FeignException} exception raised
-     * @param request from frontend
-     * @return a {@link ProblemJson} as response with the cause and with an appropriated HTTP status
-     */
-    @ExceptionHandler({FeignException.class})
-    public ResponseEntity<ProblemJson> handleFeignException(final FeignException ex, final WebRequest request) {
-        log.warn("FeignException raised: ", ex);
-
-        ProblemJson problem;
-        if (ex.responseBody().isPresent()) {
-            var body = new String(ex.responseBody().get().array(), StandardCharsets.UTF_8);
-            try {
-                problem = new ObjectMapper().readValue(body, ProblemJson.class);
-            } catch (JsonProcessingException e) {
-                problem = ProblemJson.builder()
-                        .status(HttpStatus.BAD_GATEWAY.value())
-                        .title(AppError.RESPONSE_NOT_READABLE.getTitle())
-                        .detail(AppError.RESPONSE_NOT_READABLE.getDetails())
-                        .build();
-            }
-        } else {
-            problem = ProblemJson.builder()
-                    .status(HttpStatus.BAD_GATEWAY.value())
-                    .title("No Response Body")
-                    .detail("Error with external dependency")
-                    .build();
-        }
-
-        return new ResponseEntity<>(problem, HttpStatus.valueOf(problem.getStatus()));
-    }
-
 
     /**
      * Handle if a {@link AppException} is raised
