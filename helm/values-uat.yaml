@@ -71,6 +71,7 @@ microservice-chart:
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
     VERIFYKO_COLDSTORAGE_TABLE: 'events'
     VERIFYKO_COLDSTORAGE_BLOBCONTAINER: 'payload'
+    VERIFYKO_HOTSTORAGE_URI: 'pagopa-u-weu-nodo-verifyko-cosmos-account.privatelink.documents.azure.com'
     VERIFYKO_HOTSTORAGE_DATABASE: 'nodo_verifyko'
     VERIFYKO_HOTSTORAGE_ENABLEQUERYMETRICS: 'false'
     OTEL_SERVICE_NAME: "pagopa-nodo-verifyko-aux"
@@ -86,7 +87,7 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_HEADERS: "elastic-apm-secret-token"
     VERIFYKO_COLDSTORAGE_CONNECTION: "verifyko-tablestorage-connection-string"
     VERIFYKO_HOTSTORAGE_URI: "verifyko-datastore-cosmos-uri"
-    VERIFYKO_HOTSTORAGE_KEY: "cosmos-verifyko-account-key"
+    VERIFYKO_HOTSTORAGE_KEY: "verifyko-datastore-key"
   keyvault:
     name: "pagopa-u-nodo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
