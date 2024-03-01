@@ -92,6 +92,7 @@ public class ReconciliationService {
                 .map(ConvertedKey::new)
                 .collect(Collectors.toSet());
         Set<String> hotStorageIDsForDate = hotStorageRepo.getIDsByDate(CommonUtility.generatePartitionKeyForHotStorage(stringedDate));
+        log.info(String.format("Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
 
         // Reconcile events from cold storage to hot storage and retrieve the list of status info for each persisted event
         List<ReconciledEventStatus> coldToHotReconciledEvents = reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
@@ -112,10 +113,13 @@ public class ReconciliationService {
         Set<String> eventIDsNotInColdStorage = hotStorageIDs.stream()
                 .filter(id -> !linearizedColdStorageIDs.contains(id))
                 .collect(Collectors.toUnmodifiableSet());
+        log.info(String.format("Found [%d] elements in the hot storage that are not found in the cold storage.", eventIDsNotInColdStorage.size()));
 
         // Start reconciliation for each event ID
         List<ReconciledEventStatus> hotToColdReconciledEvents = new LinkedList<>();
         for (String eventID : eventIDsNotInColdStorage) {
+
+            log.info(String.format("Analyzing event with ID [%s] from hot storage.", eventID));
 
             // Initialize data for reconciled event status object
             ReconciledEventState reconciliationStatus = ReconciledEventState.SUCCESS;
@@ -174,10 +178,13 @@ public class ReconciliationService {
         Set<ConvertedKey> eventIDsNotInHotStorage = coldStorageIDs.stream()
                 .filter(compositeID -> !hotStorageIDs.contains(compositeID.getAdaptedKey()))
                 .collect(Collectors.toUnmodifiableSet());
+        log.info(String.format("Found [%d] elements in the cold storage that are not found in the hot storage.", eventIDsNotInHotStorage.size()));
 
         // Start reconciliation for each event ID
         List<ReconciledEventStatus> coldToHotReconciledEvents = new LinkedList<>();
         for (ConvertedKey convertedKey : eventIDsNotInHotStorage) {
+
+            log.info(String.format("Analyzing event with ID [%s] from cold storage.", convertedKey.getRowKey()));
 
             // Initialize data for reconciled event status object
             ReconciledEventState reconciliationStatus = ReconciledEventState.SUCCESS;
