@@ -19,9 +19,11 @@ public class DataStorageRepository {
         this.cosmosTemplate = cosmosTemplate;
     }
 
-    public Set<String> getIDsByDate(String date) {
-        String q = "SELECT VALUE e.id FROM e WHERE e.PartitionKey LIKE '" + date + "%'";
-        SqlQuerySpec query = new SqlQuerySpec(q);
+    public Set<String> getIDsByDate(String date, Long lowerBoundTimestamp, Long upperBoundTimestamp) {
+        SqlQuerySpec query = new SqlQuerySpec("SELECT VALUE e.id FROM e" +
+                " WHERE e.PartitionKey LIKE '" + date + "%'" +
+                " AND e.faultBean.timestamp >= " + lowerBoundTimestamp +
+                " AND e.faultBean.timestamp <= " + upperBoundTimestamp);
         Spliterator<String> iterator = cosmosTemplate.runQuery(query, HotStorageVerifyKO.class, String.class).spliterator();
         return StreamSupport.stream(iterator, false).collect(Collectors.toSet());
     }

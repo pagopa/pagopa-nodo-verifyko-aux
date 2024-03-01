@@ -28,9 +28,13 @@ public class TableStorageRepository {
                 .getTableReference(tableName);
     }
 
-    public Set<String> getIDsByDate(String date) {
+    public Set<String> getIDsByDate(String partitionKey, Long dateLowerBound, Long dateUpperBound) {
         Set<String> ids = new HashSet<>();
-        String queryWhereClause = TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, date);
+        String queryWhereClausePartitionKey = TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, partitionKey);
+        String queryWhereClauseDateTimeLowerBound = TableQuery.generateFilterCondition("timestamp", TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, dateLowerBound);
+        String queryWhereClauseDateTimeUpperBound = TableQuery.generateFilterCondition("timestamp", TableQuery.QueryComparisons.LESS_THAN_OR_EQUAL, dateUpperBound);
+        String queryWhereClauseDateTime = TableQuery.combineFilters(queryWhereClauseDateTimeLowerBound, TableQuery.Operators.AND, queryWhereClauseDateTimeUpperBound);
+        String queryWhereClause = TableQuery.combineFilters(queryWhereClausePartitionKey, TableQuery.Operators.AND, queryWhereClauseDateTime);
         TableQuery<ColdStorageVerifyKO> query = TableQuery.from(ColdStorageVerifyKO.class).where(queryWhereClause).select(new String[]{"RowKey"});
         Iterable<ColdStorageVerifyKO> result = table.execute(query);
         result.forEach(entity -> ids.add(entity.getRowKey()));

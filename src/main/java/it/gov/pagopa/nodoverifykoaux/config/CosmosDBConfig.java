@@ -8,7 +8,6 @@ import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
 import com.azure.spring.data.cosmos.config.CosmosConfig;
 import com.azure.spring.data.cosmos.core.ResponseDiagnostics;
 import com.azure.spring.data.cosmos.core.ResponseDiagnosticsProcessor;
-import com.azure.spring.data.cosmos.core.mapping.EnableCosmosAuditing;
 import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,6 @@ import org.springframework.lang.Nullable;
 @Configuration
 @EnableCosmosRepositories("it.gov.pagopa.nodoverifykoaux.repository")
 @EnableConfigurationProperties
-@EnableCosmosAuditing
 @ConditionalOnExpression("'${info.properties.environment}'!='test'")
 @Slf4j
 public class CosmosDBConfig extends AbstractCosmosConfiguration {

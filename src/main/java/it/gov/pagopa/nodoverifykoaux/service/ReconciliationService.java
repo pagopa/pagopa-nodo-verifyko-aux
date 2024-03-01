@@ -77,7 +77,7 @@ public class ReconciliationService {
     }
 
     @Transactional
-    public ReconciliationStatus reconcileEventsByDate(String date) {
+    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachBatch) {
 
         Date startTime = Calendar.getInstance().getTime();
 
@@ -87,18 +87,35 @@ public class ReconciliationService {
         }
         String stringedDate = date.replace("-0", "-");
 
-        // Retrieving IDs by date either from cold storage and from hot storage
-        Set<ConvertedKey> coldStorageIDsForDate = coldStorageRepo.getIDsByDate(stringedDate).stream()
-                .map(ConvertedKey::new)
-                .collect(Collectors.toSet());
-        Set<String> hotStorageIDsForDate = hotStorageRepo.getIDsByDate(CommonUtility.generatePartitionKeyForHotStorage(stringedDate));
-        log.info(String.format("Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
+        // Initialize status data
+        List<ReconciledEventStatus> coldToHotReconciledEvents = new LinkedList<>();
+        List<ReconciledEventStatus> hotToColdReconciledEvents = new LinkedList<>();
+        Date dateLowerBound = dateValidator.getDate(date);
 
-        // Reconcile events from cold storage to hot storage and retrieve the list of status info for each persisted event
-        List<ReconciledEventStatus> coldToHotReconciledEvents = reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
+        long batchCounter = 1;
+        while (!isComputationEnded(date, dateLowerBound)) {
 
-        // Reconcile events from hot storage to cold storage and retrieve the list of status info for each persisted event
-        List<ReconciledEventStatus> hotToColdReconciledEvents = reconcileEventsFromHotToColdStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
+            Date dateUpperBound = dateValidator.getDate(date, minutesForEachBatch * batchCounter);
+            Long dateLowerBoundTimestamp = dateLowerBound.getTime() / 1000;
+            Long dateUpperBoundTimestamp = dateUpperBound.getTime() / 1000;
+
+            // Retrieving IDs by date either from cold storage and from hot storage
+            Set<ConvertedKey> coldStorageIDsForDate = coldStorageRepo.getIDsByDate(stringedDate, dateLowerBoundTimestamp, dateUpperBoundTimestamp).stream()
+                    .map(ConvertedKey::new)
+                    .collect(Collectors.toSet());
+            Set<String> hotStorageIDsForDate = hotStorageRepo.getIDsByDate(CommonUtility.generatePartitionKeyForHotStorage(stringedDate), dateLowerBoundTimestamp, dateUpperBoundTimestamp);
+            log.info(String.format("Analyzing time section [%d-%d]. Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", dateLowerBoundTimestamp, dateUpperBoundTimestamp, coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
+
+            // Reconcile events from cold storage to hot storage and retrieve the list of status info for each persisted event
+            coldToHotReconciledEvents.addAll(reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate));
+
+            // Reconcile events from hot storage to cold storage and retrieve the list of status info for each persisted event
+            hotToColdReconciledEvents.addAll(reconcileEventsFromHotToColdStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate));
+
+            // Update batch counter and date bounds
+            dateLowerBound = dateUpperBound;
+            batchCounter++;
+        }
 
         // Last, return the general status for reconciliation operation
         return generateReconciliationStatus(coldToHotReconciledEvents, hotToColdReconciledEvents, startTime, date, stringedDate);
@@ -229,6 +246,10 @@ public class ReconciliationService {
         }
 
         return coldToHotReconciledEvents;
+    }
+
+    private boolean isComputationEnded(String analyzedDate, Date lowerBoundDate) {
+        return !analyzedDate.equals(this.dateValidator.getDateAsString(lowerBoundDate).substring(0, 10));
     }
 
 }

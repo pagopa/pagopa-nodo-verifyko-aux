@@ -41,7 +41,11 @@ public class ActionController {
             @ApiResponse(responseCode = "400", description = "If passed date is invalid.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "If an error occurred during execution.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @OpenAPITableMetadata(external = false, idempotency = false, readWriteIntense = OpenAPITableMetadata.ReadWrite.BOTH)
-    public ResponseEntity<ReconciliationStatus> reconcileEventsByDate(@Parameter(description = "The date, in yyyy-MM-dd format, on which the reconciliation will be executed.", example = "2024-01-01", required = true) @RequestParam String date) {
-        return ResponseEntity.ok(reconciliationService.reconcileEventsByDate(date));
+    public ResponseEntity<ReconciliationStatus> reconcileEventsByDate(
+            @Parameter(description = "The date, in yyyy-MM-dd format, on which the reconciliation will be executed.", example = "2024-01-01", required = true)
+            @RequestParam String date,
+            @Parameter(description = "The size of the batch on which the reconciliation will be executed for each steps. This avoids the large queries to storages. Defined in minutes.", example = "30")
+            @RequestParam(value = "batch-size-in-minutes", required = false, defaultValue = "1440") Long batchSizeInMinutes) {
+        return ResponseEntity.ok(reconciliationService.reconcileEventsByDate(date, batchSizeInMinutes));
     }
 }
