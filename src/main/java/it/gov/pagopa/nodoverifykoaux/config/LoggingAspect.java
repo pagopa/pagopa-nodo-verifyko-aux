@@ -149,13 +149,4 @@ public class LoggingAspect {
         log.info("Failed API operation {} - error: {}", MDC.get(METHOD), result);
         MDC.clear();
     }
-
-    @Around(value = "repository() || service()")
-    public Object logTrace(ProceedingJoinPoint joinPoint) throws Throwable {
-        Map<String, String> params = getParams(joinPoint);
-        log.debug("Call method {} - args: {}", joinPoint.getSignature().toShortString(), params);
-        Object result = joinPoint.proceed();
-        log.debug("Return method {} - result: {}", joinPoint.getSignature().toShortString(), result);
-        return result;
-    }
 }
