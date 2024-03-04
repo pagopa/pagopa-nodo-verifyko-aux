@@ -1,337 +1,422 @@
 {
-  "openapi": "3.0.1",
-  "info": {
-    "description": "A service that permits to handle stored Verify KO events in hot-storage and cold-storage.",
-    "termsOfService": "https://www.pagopa.gov.it/",
-    "title": "nodo-verifyko-aux",
-    "version": "0.1.5-1-feat-report-extraction"
+  "openapi" : "3.0.1",
+  "info" : {
+    "description" : "A service that permits to handle stored Verify KO events in hot-storage and cold-storage.",
+    "termsOfService" : "https://www.pagopa.gov.it/",
+    "title" : "nodo-verifyko-aux",
+    "version" : "0.1.5"
   },
-  "servers": [
-    {
-      "description": "Generated server url",
-      "url": "http://localhost"
-    }
-  ],
-  "tags": [
-    {
-      "description": "Everything about actions on Verify KO events",
-      "name": "Actions"
-    }
-  ],
-  "paths": {
-    "/info": {
-      "get": {
-        "operationId": "healthCheck",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppInfo"
+  "servers" : [ {
+    "description" : "Generated server url",
+    "url" : "http://localhost"
+  } ],
+  "tags" : [ {
+    "description" : "Everything about statistics on Verify KO events",
+    "name" : "Statistics"
+  }, {
+    "description" : "Everything about actions on Verify KO events",
+    "name" : "Actions"
+  } ],
+  "paths" : {
+    "/info" : {
+      "get" : {
+        "operationId" : "healthCheck",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AppInfo"
                 }
               }
             },
-            "description": "OK.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+            "description" : "OK.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           },
-          "403": {
-            "description": "Forbidden.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+          "403" : {
+            "description" : "Forbidden.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             },
-            "description": "Service unavailable.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           }
         },
-        "security": [
-          {
-            "ApiKey": []
-          }
-        ],
-        "summary": "Return OK if application is started",
-        "tags": [
-          "Home"
-        ]
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ],
+        "summary" : "Return OK if application is started",
+        "tags" : [ "Home" ]
       },
-      "parameters": [
-        {
-          "description": "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
-          "in": "header",
-          "name": "X-Request-Id",
-          "schema": {
-            "type": "string"
-          }
+      "parameters" : [ {
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "in" : "header",
+        "name" : "X-Request-Id",
+        "schema" : {
+          "type" : "string"
         }
-      ]
+      } ]
     },
-    "/reconciliation": {
-      "parameters": [
-        {
-          "description": "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
-          "in": "header",
-          "name": "X-Request-Id",
-          "schema": {
-            "type": "string"
-          }
+    "/reconciliation" : {
+      "parameters" : [ {
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "in" : "header",
+        "name" : "X-Request-Id",
+        "schema" : {
+          "type" : "string"
         }
-      ],
-      "post": {
-        "description": "**Description:**  \nThe API execute a reconciliation of Verify KO events for the passed date, aligning hot-storage with cold-storage for this day.  \n\n**API properties:**\nProperty | Value\n- | -\nInternal | Y\nExternal | N\nSynchronous | SYNC\nAuthorization | NONE\nAuthentication | NONE\nTPS | 1.0/sec\nIdempotency | N\nStateless | Y\nRead/Write Intense | Read and Write\nCacheable | N\n",
-        "operationId": "reconcileEventsByDate",
-        "parameters": [
-          {
-            "description": "The date, in yyyy-MM-dd format, on which the reconciliation will be executed.",
-            "example": "2024-01-01",
-            "in": "query",
-            "name": "date",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+      } ],
+      "post" : {
+        "description" : "**Description:**  \nThe API execute a reconciliation of Verify KO events for the passed date, aligning hot-storage with cold-storage for this day.  \n\n**API properties:**\nProperty | Value\n- | -\nInternal | Y\nExternal | N\nSynchronous | SYNC\nAuthorization | NONE\nAuthentication | NONE\nTPS | 1.0/sec\nIdempotency | N\nStateless | Y\nRead/Write Intense | Read and Write\nCacheable | N\n",
+        "operationId" : "reconcileEventsByDate",
+        "parameters" : [ {
+          "description" : "The date, in yyyy-MM-dd format, on which the reconciliation will be executed.",
+          "example" : "2024-01-01",
+          "in" : "query",
+          "name" : "date",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReconciliationStatus"
+        }, {
+          "description" : "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.",
+          "example" : 1440,
+          "in" : "query",
+          "name" : "time-frame-in-minutes",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "default" : 1440
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReconciliationStatus"
                 }
               }
             },
-            "description": "Reconciliation executed with success.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+            "description" : "Reconciliation executed with success.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             },
-            "description": "If passed date is invalid.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+            "description" : "If passed date is invalid.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             },
-            "description": "If an error occurred during execution.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+            "description" : "If an error occurred during execution.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
           }
         },
-        "security": [
-          {
-            "ApiKey": []
-          }
-        ],
-        "summary": "Reconcile VerifyKO events in hot-storage and cold-storage",
-        "tags": [
-          "Actions"
-        ]
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ],
+        "summary" : "Reconcile VerifyKO events in hot-storage and cold-storage",
+        "tags" : [ "Actions" ]
       }
+    },
+    "/reports" : {
+      "get" : {
+        "description" : "**Description:**  \nThe API execute the export of a report about Verify KO events from hot-storage stored for the passed month.  \n\n**API properties:**\nProperty | Value\n- | -\nInternal | Y\nExternal | N\nSynchronous | SYNC\nAuthorization | NONE\nAuthentication | NONE\nTPS | 1.0/sec\nIdempotency | Y\nStateless | Y\nRead/Write Intense | Read\nCacheable | Y\n",
+        "operationId" : "extractReportFromHotStorageByMonth",
+        "parameters" : [ {
+          "description" : "The year on which the report extraction will be executed.",
+          "example" : 2020,
+          "in" : "query",
+          "name" : "year",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "The month on which the report extraction will be executed. within four months from today.",
+          "example" : 1,
+          "in" : "query",
+          "name" : "month",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : { }
+            },
+            "description" : "Export extracted with success.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            },
+            "description" : "If passed date is invalid.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            },
+            "description" : "If an error occurred during execution.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ],
+        "summary" : "Export Verify KO report by month from Hot Storage",
+        "tags" : [ "Statistics" ]
+      },
+      "parameters" : [ {
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "in" : "header",
+        "name" : "X-Request-Id",
+        "schema" : {
+          "type" : "string"
+        }
+      } ]
     }
   },
-  "components": {
-    "schemas": {
-      "AppInfo": {
-        "type": "object",
-        "properties": {
-          "environment": {
-            "type": "string"
+  "components" : {
+    "schemas" : {
+      "AppInfo" : {
+        "type" : "object",
+        "properties" : {
+          "environment" : {
+            "type" : "string"
           },
-          "name": {
-            "type": "string"
+          "name" : {
+            "type" : "string"
           },
-          "version": {
-            "type": "string"
+          "version" : {
+            "type" : "string"
           }
         }
       },
-      "ProblemJson": {
-        "type": "object",
-        "properties": {
-          "detail": {
-            "type": "string",
-            "description": "A human readable explanation specific to this occurrence of the problem.",
-            "example": "There was an error processing the request"
+      "ProblemJson" : {
+        "type" : "object",
+        "properties" : {
+          "detail" : {
+            "type" : "string",
+            "description" : "A human readable explanation specific to this occurrence of the problem.",
+            "example" : "There was an error processing the request"
           },
-          "status": {
-            "maximum": 600,
-            "minimum": 100,
-            "type": "integer",
-            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
-            "format": "int32",
-            "example": 200
+          "status" : {
+            "maximum" : 600,
+            "minimum" : 100,
+            "type" : "integer",
+            "description" : "The HTTP status code generated by the origin server for this occurrence of the problem.",
+            "format" : "int32",
+            "example" : 200
           },
-          "title": {
-            "type": "string",
-            "description": "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
+          "title" : {
+            "type" : "string",
+            "description" : "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
           }
         }
       },
-      "ReconciledEventStatus": {
-        "type": "object",
-        "properties": {
-          "cause": {
-            "type": "string"
+      "ReconciledEventStatus" : {
+        "type" : "object",
+        "properties" : {
+          "cause" : {
+            "type" : "string"
           },
-          "eventReconciledFromOtherStorage": {
-            "type": "string"
+          "eventReconciledFromOtherStorage" : {
+            "type" : "string"
           },
-          "newEventInserted": {
-            "type": "string"
+          "newEventInserted" : {
+            "type" : "string"
           },
-          "status": {
-            "type": "string",
-            "enum": [
-              "SUCCESS",
-              "FAILURE"
-            ]
+          "status" : {
+            "type" : "string",
+            "enum" : [ "SUCCESS", "FAILURE" ]
           }
         }
       },
-      "ReconciliationData": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
+      "ReconciliationData" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string"
           },
-          "fromColdToHotStorage": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReconciledEventStatus"
+          "fromColdToHotStorage" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconciledEventStatus"
             }
           },
-          "fromHotToColdStorage": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReconciledEventStatus"
+          "fromHotToColdStorage" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReconciledEventStatus"
             }
           },
-          "usedDateForSearch": {
-            "type": "string"
+          "usedDateForSearch" : {
+            "type" : "string"
           }
         }
       },
-      "ReconciliationHotColdComparation": {
-        "type": "object",
-        "properties": {
-          "fromColdToHot": {
-            "type": "integer",
-            "format": "int32"
+      "ReconciliationHotColdComparation" : {
+        "type" : "object",
+        "properties" : {
+          "fromColdToHot" : {
+            "type" : "integer",
+            "format" : "int32"
           },
-          "fromHotToCold": {
-            "type": "integer",
-            "format": "int32"
+          "fromHotToCold" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
-      "ReconciliationStatistics": {
-        "type": "object",
-        "properties": {
-          "analyzed": {
-            "$ref": "#/components/schemas/ReconciliationHotColdComparation"
+      "ReconciliationStatistics" : {
+        "type" : "object",
+        "properties" : {
+          "analyzed" : {
+            "$ref" : "#/components/schemas/ReconciliationHotColdComparation"
           },
-          "endedAt": {
-            "type": "string",
-            "format": "date-time"
+          "endedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           },
-          "failed": {
-            "$ref": "#/components/schemas/ReconciliationHotColdComparation"
+          "failed" : {
+            "$ref" : "#/components/schemas/ReconciliationHotColdComparation"
           },
-          "startedAt": {
-            "type": "string",
-            "format": "date-time"
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           },
-          "succeeded": {
-            "$ref": "#/components/schemas/ReconciliationHotColdComparation"
+          "succeeded" : {
+            "$ref" : "#/components/schemas/ReconciliationHotColdComparation"
           }
         }
       },
-      "ReconciliationStatus": {
-        "type": "object",
-        "properties": {
-          "overview": {
-            "$ref": "#/components/schemas/ReconciliationData"
+      "ReconciliationStatus" : {
+        "type" : "object",
+        "properties" : {
+          "overview" : {
+            "$ref" : "#/components/schemas/ReconciliationData"
           },
-          "statistics": {
-            "$ref": "#/components/schemas/ReconciliationStatistics"
+          "statistics" : {
+            "$ref" : "#/components/schemas/ReconciliationStatistics"
           }
         }
       }
     },
-    "securitySchemes": {
-      "ApiKey": {
-        "description": "The API key to access this function app.",
-        "in": "header",
-        "name": "Ocp-Apim-Subscription-Key",
-        "type": "apiKey"
+    "securitySchemes" : {
+      "ApiKey" : {
+        "description" : "The API key to access this function app.",
+        "in" : "header",
+        "name" : "Ocp-Apim-Subscription-Key",
+        "type" : "apiKey"
       }
     }
   }
