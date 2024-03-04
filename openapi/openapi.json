@@ -4,7 +4,7 @@
     "description": "A service that permits to handle stored Verify KO events in hot-storage and cold-storage.",
     "termsOfService": "https://www.pagopa.gov.it/",
     "title": "nodo-verifyko-aux",
-    "version": "0.1.5"
+    "version": "0.1.5-2-feat-report-extraction"
   },
   "servers": [
     {
@@ -13,6 +13,10 @@
     }
   ],
   "tags": [
+    {
+      "description": "Everything about statistics on Verify KO events",
+      "name": "Statistics"
+    },
     {
       "description": "Everything about actions on Verify KO events",
       "name": "Actions"
@@ -127,6 +131,18 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.",
+            "example": 1440,
+            "in": "query",
+            "name": "time-frame-in-minutes",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 1440
+            }
           }
         ],
         "responses": {
@@ -195,6 +211,107 @@
           "Actions"
         ]
       }
+    },
+    "/reports": {
+      "get": {
+        "description": "**Description:**  \nThe API execute the export of a report about Verify KO events from hot-storage stored for the passed month.  \n\n**API properties:**\nProperty | Value\n- | -\nInternal | Y\nExternal | N\nSynchronous | SYNC\nAuthorization | NONE\nAuthentication | NONE\nTPS | 1.0/sec\nIdempotency | Y\nStateless | Y\nRead/Write Intense | Read\nCacheable | Y\n",
+        "operationId": "extractReportFromHotStorageByMonth",
+        "parameters": [
+          {
+            "description": "The year on which the report extraction will be executed.",
+            "example": 2020,
+            "in": "query",
+            "name": "year",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "description": "The month on which the report extraction will be executed. within four months from today.",
+            "example": 1,
+            "in": "query",
+            "name": "month",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Export extracted with success.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            },
+            "description": "If passed date is invalid.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            },
+            "description": "If an error occurred during execution.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "summary": "Export Verify KO report by month from Hot Storage",
+        "tags": [
+          "Statistics"
+        ]
+      },
+      "parameters": [
+        {
+          "description": "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+          "in": "header",
+          "name": "X-Request-Id",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
     }
   },
   "components": {

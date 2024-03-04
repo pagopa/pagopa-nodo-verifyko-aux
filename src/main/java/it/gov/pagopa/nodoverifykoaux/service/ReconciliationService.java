@@ -16,7 +16,6 @@ import it.gov.pagopa.nodoverifykoaux.util.DateValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,11 +36,14 @@ public class ReconciliationService {
 
     private final Gson gsonMapper;
 
-    public ReconciliationService(DataStorageRepository hotStorageRepo, TableStorageRepository coldStorageRepo, BlobStorageRepository coldStorageBlobRepo, ModelMapper mapper) {
+    public ReconciliationService(DataStorageRepository hotStorageRepo,
+                                 TableStorageRepository coldStorageRepo,
+                                 BlobStorageRepository coldStorageBlobRepo,
+                                 ModelMapper mapper) {
         this.hotStorageRepo = hotStorageRepo;
         this.coldStorageRepo = coldStorageRepo;
         this.coldStorageBlobRepo = coldStorageBlobRepo;
-        this.dateValidator = new DateValidator("yyyy-MM-dd");
+        this.dateValidator = new DateValidator("yyyy-MM-ddZ");
         this.mapper = mapper;
         this.gsonMapper = new Gson();
     }
@@ -76,13 +78,13 @@ public class ReconciliationService {
                 .build();
     }
 
-    @Transactional
-    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachBatch) {
+    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachTimeFrame) {
 
         Date startTime = Calendar.getInstance().getTime();
 
         // Execute checks on date and convert it in required format
-        if (!dateValidator.isValid(date)) {
+        String utcDate = date + "+0000";
+        if (!dateValidator.isValid(utcDate)) {
             throw new AppException(AppError.BAD_REQUEST_INVALID_DATE, date);
         }
         String stringedDate = date.replace("-0", "-");
@@ -90,12 +92,12 @@ public class ReconciliationService {
         // Initialize status data
         List<ReconciledEventStatus> coldToHotReconciledEvents = new LinkedList<>();
         List<ReconciledEventStatus> hotToColdReconciledEvents = new LinkedList<>();
-        Date dateLowerBound = dateValidator.getDate(date);
+        Date dateLowerBound = dateValidator.getDate(utcDate);
 
         long batchCounter = 1;
         while (!isComputationEnded(date, dateLowerBound)) {
 
-            Date dateUpperBound = dateValidator.getDate(date, minutesForEachBatch * batchCounter);
+            Date dateUpperBound = dateValidator.getDate(utcDate, minutesForEachTimeFrame * batchCounter);
             Long dateLowerBoundTimestamp = dateLowerBound.getTime() / 1000;
             Long dateUpperBoundTimestamp = dateUpperBound.getTime() / 1000;
 
