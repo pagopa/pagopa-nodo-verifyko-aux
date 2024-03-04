@@ -44,7 +44,7 @@ public class ActionController {
     public ResponseEntity<ReconciliationStatus> reconcileEventsByDate(
             @Parameter(description = "The date, in yyyy-MM-dd format, on which the reconciliation will be executed.", example = "2024-01-01", required = true)
             @RequestParam String date,
-            @Parameter(description = "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.", example = "1440")
+            @Parameter(description = "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.", example = "30")
             @RequestParam(value = "time-frame-in-minutes", required = false, defaultValue = "1440") Long timeFrame) {
         return ResponseEntity.ok(reconciliationService.reconcileEventsByDate(date, timeFrame));
     }
