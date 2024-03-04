@@ -34,9 +34,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: ""
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -74,7 +74,7 @@ microservice-chart:
     VERIFYKO_HOTSTORAGE_URI: 'https://pagopa-p-weu-nodo-verifyko-cosmos-account.documents.azure.com:443/'
     VERIFYKO_HOTSTORAGE_DATABASE: 'nodo_verifyko'
     VERIFYKO_HOTSTORAGE_ENABLEQUERYMETRICS: 'false'
-    VERIFYKO_REPORT_MINUTESTIMEFRAME: '120'
+    VERIFYKO_REPORT_MINUTESTIMEFRAME: '30'
     OTEL_SERVICE_NAME: "pagopa-nodo-verifyko-aux"
     OTEL_RESOURCE_ATTRIBUTES: "service.environment=prod"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
@@ -95,8 +95,8 @@ microservice-chart:
       tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   tmpVolumeMount:
     create: true
-  nodeSelector: {}
-  tolerations: []
+  nodeSelector: { }
+  tolerations: [ ]
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
