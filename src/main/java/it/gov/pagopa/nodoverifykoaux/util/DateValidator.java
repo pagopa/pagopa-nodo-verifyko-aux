@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Month;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
-import java.util.Date;
+import java.util.*;
 
 @Slf4j
 public class DateValidator {
@@ -14,10 +16,18 @@ public class DateValidator {
 
     public DateValidator(String format) {
         this.dateFormatter = new SimpleDateFormat(format);
+        this.dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     public boolean isValid(String date) {
         return getDate(date) != null;
+    }
+
+    public boolean isValid(Integer year, Integer month) {
+        Calendar now = Calendar.getInstance();
+        int currentYear = now.get(Calendar.YEAR);
+        int currentMonth = now.get(Calendar.MONTH) + 1;
+        return (year == currentYear && month < currentMonth) || year < currentYear;
     }
 
     public Date getDate(String dateAsString) {
@@ -41,6 +51,15 @@ public class DateValidator {
             log.warn(String.format("Error while trying to parse string as date. Invalid string format: [%s] must follows 'yyyy-MM-dd' format", dateAsString));
         }
         return date;
+    }
+
+    public List<String> getDaysOfMonth(Integer year, Integer month) {
+        List<String> days = new LinkedList<>();
+        YearMonth yearMonth = YearMonth.of(year, Month.of(month));
+        yearMonth.atDay(1)
+                .datesUntil(yearMonth.plusMonths(1).atDay(1))
+                .forEach(day -> days.add(day.toString() + "+0000"));
+        return days;
     }
 
     public Long getDateAsTimestamp(String dateAsString) {

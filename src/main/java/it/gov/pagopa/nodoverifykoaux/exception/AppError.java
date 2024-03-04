@@ -9,6 +9,7 @@ public enum AppError {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Something was wrong"),
     BAD_REQUEST(HttpStatus.INTERNAL_SERVER_ERROR, "Bad Request", "%s"),
     BAD_REQUEST_INVALID_DATE(HttpStatus.INTERNAL_SERVER_ERROR, "Bad Request", "The passed date [%s] must be compliant to format 'yyyy-MM-dd'"),
+    BAD_REQUEST_INVALID_DATE_FOR_REPORT(HttpStatus.INTERNAL_SERVER_ERROR, "Bad Request", "The passed date [%d-%d-XX] must refers to a past month"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized", "Error during authentication"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden", "This method is forbidden"),
     RESPONSE_NOT_READABLE(HttpStatus.BAD_GATEWAY, "Response Not Readable", "The response body is not readable"),

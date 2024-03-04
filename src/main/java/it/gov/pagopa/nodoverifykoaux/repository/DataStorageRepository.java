@@ -5,6 +5,7 @@ import com.azure.spring.data.cosmos.core.CosmosTemplate;
 import it.gov.pagopa.nodoverifykoaux.entity.HotStorageVerifyKO;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
@@ -21,11 +22,20 @@ public class DataStorageRepository {
 
     public Set<String> getIDsByDate(String date, Long lowerBoundTimestamp, Long upperBoundTimestamp) {
         SqlQuerySpec query = new SqlQuerySpec("SELECT VALUE e.id FROM e" +
-                " WHERE e.PartitionKey LIKE '" + date + "%'" +
+                " WHERE e.PartitionKey LIKE '" + date + "-%'" +
                 " AND e.faultBean.timestamp >= " + lowerBoundTimestamp +
                 " AND e.faultBean.timestamp <= " + upperBoundTimestamp);
         Spliterator<String> iterator = cosmosTemplate.runQuery(query, HotStorageVerifyKO.class, String.class).spliterator();
         return StreamSupport.stream(iterator, false).collect(Collectors.toSet());
+    }
+
+    public List<HotStorageVerifyKO> getByDate(String date, Long lowerBoundTimestamp, Long upperBoundTimestamp) {
+        SqlQuerySpec query = new SqlQuerySpec("SELECT * FROM e" +
+                " WHERE e.PartitionKey LIKE '" + date + "-%'" +
+                " AND e.faultBean.timestamp >= " + lowerBoundTimestamp +
+                " AND e.faultBean.timestamp <= " + upperBoundTimestamp);
+        Spliterator<HotStorageVerifyKO> iterator = cosmosTemplate.runQuery(query, HotStorageVerifyKO.class, HotStorageVerifyKO.class).spliterator();
+        return StreamSupport.stream(iterator, false).toList();
     }
 
     public HotStorageVerifyKO findById(String id) {
