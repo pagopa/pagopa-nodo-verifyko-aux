@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.nodoverifykoaux.model.ProblemJson;
 import it.gov.pagopa.nodoverifykoaux.model.action.ReconciliationStatus;
+import it.gov.pagopa.nodoverifykoaux.model.action.check.ReconciliationEventStatus;
 import it.gov.pagopa.nodoverifykoaux.service.ReconciliationService;
 import it.gov.pagopa.nodoverifykoaux.util.OpenAPITableMetadata;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +48,26 @@ public class ActionController {
             @Parameter(description = "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.", example = "30")
             @RequestParam(value = "time-frame-in-minutes", required = false, defaultValue = "1440") Long timeFrame) {
         return ResponseEntity.ok(reconciliationService.reconcileEventsByDate(date, timeFrame));
+    }
+
+    @PostMapping(value = "/reconciliation/check-event", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Check if VerifyKO event is reconciled and present in hot-storage and cold-storage",
+            description = "The API execute a check of Verify KO event regarding its presence in hot-storage and in cold-storage.\n" +
+                    "All the parameters are mandatory because, in order to execute the search of the event either in hot storage and in cold storage, " +
+                    "they are necessary for the keys generation to be used for both storages.",
+            security = {@SecurityRequirement(name = "ApiKey")},
+            tags = {"Actions"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Check executed with success.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ReconciliationEventStatus.class))),
+            @ApiResponse(responseCode = "500", description = "If an error occurred during execution.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @OpenAPITableMetadata(external = false, idempotency = false, readWriteIntense = OpenAPITableMetadata.ReadWrite.BOTH)
+    public ResponseEntity<ReconciliationEventStatus> checkIfEventIsReconciled(
+            @Parameter(description = "The value used as partition key for searching data in both storages.", required = true, example = "1704063600-XXXXXXXXXXX-YYYYYYYYYYY")
+            @RequestParam(value = "partition-key") String partitionKey,
+            @Parameter(description = "The value used as row key for searching data in both storages.", required = true, example = "da5f8886-0781-444f-84ae-d990b72be70e")
+            @RequestParam(value = "row-key") String rowKey,
+            @Parameter(description = "The value used as timestamp for searching data in both storages.", required = true, example = "1704063600")
+            @RequestParam(value = "timestamp") String timestamp) {
+        return ResponseEntity.ok(reconciliationService.checkIfEventIsReconciled(partitionKey, rowKey, timestamp));
     }
 }

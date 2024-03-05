@@ -50,6 +50,13 @@ public class TableStorageRepository {
         return StreamSupport.stream(iterator, false).findFirst().orElse(null);
     }
 
+    public ColdStorageVerifyKO findByRowKey(String rowKey) {
+        String queryWhereClause = TableQuery.generateFilterCondition("RowKey", TableQuery.QueryComparisons.EQUAL, rowKey);
+        TableQuery<ColdStorageVerifyKO> query = TableQuery.from(ColdStorageVerifyKO.class).where(queryWhereClause);
+        Spliterator<ColdStorageVerifyKO> iterator = table.execute(query).spliterator();
+        return StreamSupport.stream(iterator, false).findFirst().orElse(null);
+    }
+
     public void save(ColdStorageVerifyKO eventToBeSavedInColdStorage) throws StorageException {
         table.execute(TableOperation.insertOrReplace(eventToBeSavedInColdStorage));
     }
