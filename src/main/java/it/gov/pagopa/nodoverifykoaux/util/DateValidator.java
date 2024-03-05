@@ -4,9 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Month;
-import java.time.YearMonth;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 
 @Slf4j
@@ -62,8 +60,8 @@ public class DateValidator {
         return days;
     }
 
-    public Long getDateAsTimestamp(String dateAsString) {
-        return ZonedDateTime.parse(dateAsString).toEpochSecond();
+    public String getDateFromTimestamp(Long timestamp) {
+        return LocalDate.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("UTC")).toString();
     }
 
     public String getDateAsString(Date date) {

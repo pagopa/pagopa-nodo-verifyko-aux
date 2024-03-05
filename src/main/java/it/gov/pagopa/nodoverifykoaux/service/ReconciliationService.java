@@ -135,18 +135,23 @@ public class ReconciliationService {
         // Generating row keys either for hot storage and cold storage
         String hotStorageRowKey;
         String coldStorageRowKey;
+        String coldStoragePartitionKey;
         boolean isEventFromColdStorage = tableStoragePartitionKeyPattern.matcher(partitionKey).matches();
         if (isEventFromColdStorage) {
             hotStorageRowKey = rowKey.replace(timestamp + "-", "");
             coldStorageRowKey = rowKey;
+            coldStoragePartitionKey = partitionKey;
         } else {
             hotStorageRowKey = rowKey;
             coldStorageRowKey = timestamp + "-" + rowKey;
+            coldStoragePartitionKey = dateValidator.getDateFromTimestamp(Long.parseLong(timestamp)).replace("-0", "-");
         }
 
         // Retrieve data from storages using generated row keys
+        log.info(String.format("Retrieving event from hot storage using RowKey [%s]", hotStorageRowKey));
         HotStorageVerifyKO eventInHotStorage = hotStorageRepo.findById(hotStorageRowKey);
-        ColdStorageVerifyKO eventInColdStorage = coldStorageRepo.findByRowKey(coldStorageRowKey);
+        log.info(String.format("Retrieving event from cold storage using RowKey [%s], PartitionKey [%s]", coldStorageRowKey, coldStoragePartitionKey));
+        ColdStorageVerifyKO eventInColdStorage = coldStorageRepo.findById(coldStorageRowKey, coldStoragePartitionKey);
 
         // Calculating final event status
         boolean isInHotStorage = eventInHotStorage != null;
