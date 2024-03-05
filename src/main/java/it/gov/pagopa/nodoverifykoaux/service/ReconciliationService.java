@@ -8,6 +8,8 @@ import it.gov.pagopa.nodoverifykoaux.exception.AppException;
 import it.gov.pagopa.nodoverifykoaux.mapper.ConvertColdStorageVerifyKOToHotStorageVerifyKO;
 import it.gov.pagopa.nodoverifykoaux.model.ConvertedKey;
 import it.gov.pagopa.nodoverifykoaux.model.action.*;
+import it.gov.pagopa.nodoverifykoaux.model.action.check.ReconciliationEventStatus;
+import it.gov.pagopa.nodoverifykoaux.model.action.check.ReconciliationEventStorageStatus;
 import it.gov.pagopa.nodoverifykoaux.repository.BlobStorageRepository;
 import it.gov.pagopa.nodoverifykoaux.repository.DataStorageRepository;
 import it.gov.pagopa.nodoverifykoaux.repository.TableStorageRepository;
@@ -18,6 +20,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,8 @@ public class ReconciliationService {
     private final BlobStorageRepository coldStorageBlobRepo;
 
     private final DateValidator dateValidator;
+
+    private final Pattern tableStoragePartitionKeyPattern;
 
     private final ModelMapper mapper;
 
@@ -46,6 +51,7 @@ public class ReconciliationService {
         this.dateValidator = new DateValidator("yyyy-MM-ddZ");
         this.mapper = mapper;
         this.gsonMapper = new Gson();
+        this.tableStoragePartitionKeyPattern = Pattern.compile("\\d{4}-\\d{1,2}-\\d{1,2}");
     }
 
     private static ReconciliationStatus generateReconciliationStatus(List<ReconciledEventStatus> coldToHotReconciledEvents, List<ReconciledEventStatus> hotToColdReconciledEvents, Date startTime, String date, String stringedDate) {
@@ -121,6 +127,44 @@ public class ReconciliationService {
 
         // Last, return the general status for reconciliation operation
         return generateReconciliationStatus(coldToHotReconciledEvents, hotToColdReconciledEvents, startTime, date, stringedDate);
+    }
+
+
+    public ReconciliationEventStatus checkIfEventIsReconciled(String partitionKey, String rowKey, String timestamp) {
+
+        // Generating row keys either for hot storage and cold storage
+        String hotStorageRowKey;
+        String coldStorageRowKey;
+        boolean isEventFromColdStorage = tableStoragePartitionKeyPattern.matcher(partitionKey).matches();
+        if (isEventFromColdStorage) {
+            hotStorageRowKey = rowKey.replace(timestamp + "-", "");
+            coldStorageRowKey = rowKey;
+        } else {
+            hotStorageRowKey = rowKey;
+            coldStorageRowKey = timestamp + "-" + rowKey;
+        }
+
+        // Retrieve data from storages using generated row keys
+        HotStorageVerifyKO eventInHotStorage = hotStorageRepo.findById(hotStorageRowKey);
+        ColdStorageVerifyKO eventInColdStorage = coldStorageRepo.findByRowKey(coldStorageRowKey);
+
+        // Calculating final event status
+        boolean isInHotStorage = eventInHotStorage != null;
+        boolean isInColdStorage = eventInColdStorage != null;
+        String reconciliationStatus = isInHotStorage && isInColdStorage ? "RECONCILED" : "UNRECONCILED";
+        return ReconciliationEventStatus.builder()
+                .status(!isInHotStorage && !isInColdStorage ? "INVALID_EVENT" : reconciliationStatus)
+                .coldStorageEvent(ReconciliationEventStorageStatus.builder()
+                        .eventId(coldStorageRowKey)
+                        .status(isInColdStorage ? "CREATED" : "NOT_EXISTING")
+                        .createdAt(isInColdStorage ? eventInColdStorage.getTimestamp() : null)
+                        .build())
+                .hotStorageEvent(ReconciliationEventStorageStatus.builder()
+                        .eventId(hotStorageRowKey)
+                        .status(isInHotStorage ? "CREATED" : "NOT_EXISTING")
+                        .createdAt(isInHotStorage ? eventInHotStorage.getTimestamp() : null)
+                        .build())
+                .build();
     }
 
     private List<ReconciledEventStatus> reconcileEventsFromHotToColdStorage(Set<ConvertedKey> coldStorageIDs, Set<String> hotStorageIDs, String stringedDate) {
