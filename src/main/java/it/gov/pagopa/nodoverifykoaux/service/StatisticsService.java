@@ -37,16 +37,16 @@ public class StatisticsService {
         this.reportMinutesBatchSize = reportMinutesTimeFrame;
     }
 
-    public DataReport extractReportFromHotStorageByMonth(Integer year, Integer month) {
+    public DataReport extractReportFromHotStorage(Integer year, Integer month, Integer singleDay) {
 
         // Execute checks on date and convert it in required format
-        if (!dateValidator.isValid(year, month)) {
-            throw new AppException(AppError.BAD_REQUEST_INVALID_DATE_FOR_REPORT, year, month);
+        if (!dateValidator.isValid(year, month, singleDay)) {
+            throw new AppException(AppError.BAD_REQUEST_INVALID_DATE_FOR_REPORT, year, month, singleDay == null ? "XX" : singleDay);
         }
 
         DataReport dataReport = new DataReport();
 
-        List<String> days = dateValidator.getDaysOfMonth(year, month);
+        List<String> days = dateValidator.getDaysOfMonth(year, month, singleDay);
         for (String day : days) {
 
             log.info(String.format("Extracting report data from day [%s].", day));

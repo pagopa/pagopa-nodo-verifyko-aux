@@ -17,6 +17,6 @@ import java.util.List;
 public class ReconciliationData implements Serializable {
     private String date;
     private String usedDateForSearch;
-    private List<ReconciledEventStatus> fromHotToColdStorage;
-    private List<ReconciledEventStatus> fromColdToHotStorage;
+    private List<ReconciledEventStatus> inColdStorage;
+    private List<ReconciledEventStatus> inHotStorage;
 }

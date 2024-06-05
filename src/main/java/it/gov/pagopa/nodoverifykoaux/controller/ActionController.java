@@ -16,6 +16,7 @@ import it.gov.pagopa.nodoverifykoaux.util.OpenAPITableMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +31,24 @@ public class ActionController {
 
     public ActionController(ReconciliationService reconciliationService) {
         this.reconciliationService = reconciliationService;
+    }
+
+    @GetMapping(value = "/reconciliation", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Retrieve VerifyKO events to be reconciled in hot-storage and cold-storage",
+            description = "The API retrieve the list of Verify KO events on which a reconciliation for the passed date is required.",
+            security = {@SecurityRequirement(name = "ApiKey")},
+            tags = {"Actions"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retrieved events.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ReconciliationStatus.class))),
+            @ApiResponse(responseCode = "400", description = "If passed date is invalid.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "If an error occurred during execution.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @OpenAPITableMetadata(external = false, idempotency = false, readWriteIntense = OpenAPITableMetadata.ReadWrite.BOTH)
+    public ResponseEntity<ReconciliationStatus> getEventsToReconcileByDate(
+            @Parameter(description = "The date, in yyyy-MM-dd format, on which the reconciliation will be executed.", example = "2024-01-01", required = true)
+            @RequestParam String date,
+            @Parameter(description = "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.", example = "30")
+            @RequestParam(value = "time-frame-in-minutes", required = false, defaultValue = "1440") Long timeFrame) {
+        return ResponseEntity.ok(reconciliationService.getEventsToReconcileByDate(date, timeFrame));
     }
 
     @PostMapping(value = "/reconciliation", produces = {MediaType.APPLICATION_JSON_VALUE})

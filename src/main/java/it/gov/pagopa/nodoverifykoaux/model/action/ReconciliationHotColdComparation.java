@@ -14,6 +14,6 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ReconciliationHotColdComparation implements Serializable {
-    private int fromHotToCold;
-    private int fromColdToHot;
+    private long inColdStorage;
+    private long inHotStorage;
 }
