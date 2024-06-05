@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-nodo-verifyko-aux
 description: A service that permits to handle stored Verify KO events in hot-storage and cold-storage
 type: application
-version: 0.15.0
-appVersion: 0.2.2-3-NOD-933-verify-ko-lost-events
+version: 0.16.0
+appVersion: 0.2.2-4-NOD-933-verify-ko-lost-events
 dependencies:
   - name: microservice-chart
     version: 3.0.0
