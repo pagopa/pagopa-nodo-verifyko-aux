@@ -177,9 +177,9 @@ public class ReconciliationService {
         }
 
         // Retrieve data from storages using generated row keys
-        log.info(String.format("Retrieving event from hot storage using RowKey [%s]", hotStorageRowKey));
+        log.trace(String.format("Retrieving event from hot storage using RowKey [%s]", hotStorageRowKey));
         HotStorageVerifyKO eventInHotStorage = hotStorageRepo.findById(hotStorageRowKey);
-        log.info(String.format("Retrieving event from cold storage using RowKey [%s], PartitionKey [%s]", coldStorageRowKey, coldStoragePartitionKey));
+        log.trace(String.format("Retrieving event from cold storage using RowKey [%s], PartitionKey [%s]", coldStorageRowKey, coldStoragePartitionKey));
         ColdStorageVerifyKO eventInColdStorage = coldStorageRepo.findById(coldStorageRowKey, coldStoragePartitionKey);
 
         // Calculating final event status
@@ -274,7 +274,7 @@ public class ReconciliationService {
         List<ReconciledEventStatus> hotToColdReconciledEvents = new LinkedList<>();
         for (String eventID : eventIDsNotInColdStorage) {
 
-            log.info(String.format("Analyzing event with ID [%s] from hot storage.", eventID));
+            log.trace(String.format("Analyzing event with ID [%s] from hot storage.", eventID));
 
             // Initialize data for reconciled event status object
             ReconciledEventState reconciliationStatus = ReconciledEventState.SUCCESS;
@@ -339,7 +339,7 @@ public class ReconciliationService {
         List<ReconciledEventStatus> coldToHotReconciledEvents = new LinkedList<>();
         for (ConvertedKey convertedKey : eventIDsNotInHotStorage) {
 
-            log.info(String.format("Analyzing event with ID [%s] from cold storage.", convertedKey.getRowKey()));
+            log.trace(String.format("Analyzing event with ID [%s] from cold storage.", convertedKey.getRowKey()));
 
             // Initialize data for reconciled event status object
             ReconciledEventState reconciliationStatus = ReconciledEventState.SUCCESS;
