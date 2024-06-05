@@ -59,7 +59,7 @@ public class StatisticsController {
         DataReport dataReport = statisticsService.extractReportFromHotStorage(year, month, day);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=VerifyKO-Report-" + year + month + day + ".json");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=VerifyKO-Report-" + year + month + (day == null ? "X" : day) + ".json");
 
         String content = gsonMapper.toJson(dataReport);
         ByteArrayResource resource = new ByteArrayResource(content.getBytes());

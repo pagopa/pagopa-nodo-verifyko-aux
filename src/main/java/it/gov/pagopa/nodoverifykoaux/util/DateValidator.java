@@ -63,7 +63,7 @@ public class DateValidator {
         YearMonth yearMonth = YearMonth.of(year, Month.of(month));
         if (singleDay != null) {
             yearMonth.atDay(singleDay)
-                    .datesUntil(yearMonth.atDay(singleDay))
+                    .datesUntil(yearMonth.atDay(singleDay + 1))
                     .forEach(day -> days.add(day.toString() + "+0000"));
 
         } else {
