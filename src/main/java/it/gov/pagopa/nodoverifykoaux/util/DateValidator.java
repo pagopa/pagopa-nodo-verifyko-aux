@@ -28,7 +28,7 @@ public class DateValidator {
         int currentDay = now.get(Calendar.DAY_OF_MONTH);
         boolean isBeforeMinimumDate;
         if (day != null) {
-            isBeforeMinimumDate = (year <= currentYear && month <= currentMonth && currentDay < day);
+            isBeforeMinimumDate = (year <= currentYear && month <= currentMonth && day < currentDay);
         } else {
             isBeforeMinimumDate = (year == currentYear && month < currentMonth);
         }
