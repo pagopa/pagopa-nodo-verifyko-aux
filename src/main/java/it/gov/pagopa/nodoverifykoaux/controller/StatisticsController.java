@@ -54,7 +54,7 @@ public class StatisticsController {
             @Parameter(description = "The month on which the report extraction will be executed, within four months from today.", example = "1", required = true)
             @RequestParam Integer month,
             @Parameter(description = "The day on which the report extraction will be executed, from yesterday.")
-            @RequestParam Integer day) {
+            @RequestParam(required = false) Integer day) {
 
         DataReport dataReport = statisticsService.extractReportFromHotStorage(year, month, day);
 

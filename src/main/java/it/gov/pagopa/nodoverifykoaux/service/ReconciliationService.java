@@ -249,6 +249,10 @@ public class ReconciliationService {
                     .collect(Collectors.toUnmodifiableSet());
             eventsToReconcileInColdStorage.addAll(eventIDsNotInColdStorage);
             totalEventsInColdStorage += coldStorageElements;
+
+            // Update batch counter and date bounds
+            dateLowerBound = dateUpperBound;
+            batchCounter++;
         }
 
         // Last, return the general status for reconciliation operation
