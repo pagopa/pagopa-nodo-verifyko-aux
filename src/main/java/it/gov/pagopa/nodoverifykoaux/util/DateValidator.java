@@ -58,18 +58,18 @@ public class DateValidator {
         return date;
     }
 
-    public List<String> getDaysOfMonth(Integer year, Integer month, Integer singleDay) {
+    public List<String> getDaysOfMonth(Integer year, Integer month, Integer singleDay, boolean includeTimezone) {
         List<String> days = new LinkedList<>();
         YearMonth yearMonth = YearMonth.of(year, Month.of(month));
         if (singleDay != null && singleDay <= 31) {
             yearMonth.atDay(singleDay)
                     .datesUntil(yearMonth.atDay(singleDay + 1))
-                    .forEach(day -> days.add(day.toString() + "+0000"));
+                    .forEach(day -> days.add(day.toString() + (includeTimezone ? "+0000" : "")));
 
         } else {
             yearMonth.atDay(1)
                     .datesUntil(yearMonth.plusMonths(1).atDay(1))
-                    .forEach(day -> days.add(day.toString() + "+0000"));
+                    .forEach(day -> days.add(day.toString() + (includeTimezone ? "+0000" : "")));
         }
         return days;
     }

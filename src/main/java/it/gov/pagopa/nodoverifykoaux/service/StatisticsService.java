@@ -52,7 +52,7 @@ public class StatisticsService {
 
         DataReport dataReport = new DataReport();
 
-        List<String> days = dateValidator.getDaysOfMonth(year, month, singleDay);
+        List<String> days = dateValidator.getDaysOfMonth(year, month, singleDay, true);
         for (String day : days) {
 
             log.info(String.format("Extracting report data from day [%s].", day));
@@ -105,7 +105,7 @@ public class StatisticsService {
 
         DataReport dataReport = new DataReport();
 
-        List<String> days = dateValidator.getDaysOfMonth(year, month, singleDay);
+        List<String> days = dateValidator.getDaysOfMonth(year, month, singleDay, false);
         for (String day : days) {
 
             log.info(String.format("Extracting report data from day [%s].", day));
