@@ -61,7 +61,7 @@ public class DateValidator {
     public List<String> getDaysOfMonth(Integer year, Integer month, Integer singleDay) {
         List<String> days = new LinkedList<>();
         YearMonth yearMonth = YearMonth.of(year, Month.of(month));
-        if (singleDay != null) {
+        if (singleDay != null && singleDay <= 31) {
             yearMonth.atDay(singleDay)
                     .datesUntil(yearMonth.atDay(singleDay + 1))
                     .forEach(day -> days.add(day.toString() + "+0000"));
