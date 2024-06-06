@@ -47,8 +47,8 @@ public class ActionController {
             @RequestParam String date,
             @Parameter(description = "The time frame according to which the blocks of elements to be reconciled are generated for each step. This avoids the large queries to storages. Defined in minutes.", example = "30")
             @RequestParam(value = "time-frame-in-minutes", required = false, defaultValue = "1440") Long timeFrame,
-            @Parameter(description = "The flag that activate the extraction of the detailed report about the migration, generating the list of migrated events. Set it to 'false' if you know that a whole day's data must be migrated.", example = "false")
-            @RequestParam(value = "include-events-in-report", required = false, defaultValue = "false") Boolean includeEventsInReport) {
+            @Parameter(description = "The flag that activate the extraction of the detailed report about the migration, generating the list of migrated events. Set it to 'false' if you know that a whole day's data must be migrated.", example = "false", required = true)
+            @RequestParam(value = "include-events-in-report", defaultValue = "false") Boolean includeEventsInReport) {
         return ResponseEntity.ok(reconciliationService.reconcileEventsByDate(date, timeFrame, includeEventsInReport));
     }
 
