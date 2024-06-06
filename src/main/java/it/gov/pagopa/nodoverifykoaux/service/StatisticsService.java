@@ -111,13 +111,13 @@ public class StatisticsService {
             log.info(String.format("Extracting report data from day [%s].", day));
             DailyDataReport dailyDataReport = new DailyDataReport(day);
 
-            String stringedDate = day.replace("-0", "");
+            String stringedDate = day.replace("-0", "-");
 
-            Date dateLowerBound = dateValidator.getDate(day);
+            Date dateLowerBound = dateValidator.getDate(day + "+0000");
             long batchCounter = 1;
             while (!isComputationEnded(day, dateLowerBound)) {
 
-                Date dateUpperBound = dateValidator.getDate(day, this.reportMinutesBatchSize * batchCounter);
+                Date dateUpperBound = dateValidator.getDate(day + "+0000", this.reportMinutesBatchSize * batchCounter);
                 Long dateLowerBoundTimestamp = dateLowerBound.getTime() / 1000;
                 Long dateUpperBoundTimestamp = dateUpperBound.getTime() / 1000;
 

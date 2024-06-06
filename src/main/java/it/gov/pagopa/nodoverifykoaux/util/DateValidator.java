@@ -62,8 +62,17 @@ public class DateValidator {
         List<String> days = new LinkedList<>();
         YearMonth yearMonth = YearMonth.of(year, Month.of(month));
         if (singleDay != null && singleDay <= 31) {
+            // set correct 'until' date
+            int nextDay = singleDay + 1;
+            LocalDate until;
+            if (!yearMonth.isValidDay(nextDay)) {
+                until = yearMonth.plusMonths(1).atDay(1);
+            } else {
+                until = yearMonth.atDay(singleDay + 1);
+            }
+            //
             yearMonth.atDay(singleDay)
-                    .datesUntil(yearMonth.atDay(singleDay + 1))
+                    .datesUntil(until)
                     .forEach(day -> days.add(day.toString() + (includeTimezone ? "+0000" : "")));
 
         } else {
@@ -76,6 +85,10 @@ public class DateValidator {
 
     public String getDateFromTimestamp(Long timestamp) {
         return LocalDate.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("UTC")).toString();
+    }
+
+    public String getTimeFromTimestamp(Long timestamp) {
+        return LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("UTC")).toString();
     }
 
     public String getDateAsString(Date date) {

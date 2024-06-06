@@ -112,7 +112,7 @@ public class ReconciliationService {
                     .map(ConvertedKey::new)
                     .collect(Collectors.toSet());
             Set<String> hotStorageIDsForDate = hotStorageRepo.getIDsByDate(CommonUtility.generatePartitionKeyForHotStorage(stringedDate), dateLowerBoundTimestamp, dateUpperBoundTimestamp);
-            log.info(String.format("Analyzing time section [%s-%s]. Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", dateValidator.getDateFromTimestamp(dateLowerBoundTimestamp), dateValidator.getDateFromTimestamp(dateUpperBoundTimestamp), coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
+            log.info(String.format("Analyzing time section [%s/%s]. Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", dateValidator.getTimeFromTimestamp(dateLowerBoundTimestamp), dateValidator.getTimeFromTimestamp(dateUpperBoundTimestamp), coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
 
             // Reconcile events from cold storage to hot storage and retrieve the list of status info for each persisted event
             List<ReconciledEventStatus> insertedInHotStorage = reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
