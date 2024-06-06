@@ -21,11 +21,18 @@ public class DateValidator {
         return getDate(date) != null;
     }
 
-    public boolean isValid(Integer year, Integer month) {
+    public boolean isValid(Integer year, Integer month, Integer day) {
         Calendar now = Calendar.getInstance();
         int currentYear = now.get(Calendar.YEAR);
         int currentMonth = now.get(Calendar.MONTH) + 1;
-        return (year == currentYear && month < currentMonth) || year < currentYear;
+        int currentDay = now.get(Calendar.DAY_OF_MONTH);
+        boolean isBeforeMinimumDate;
+        if (day != null) {
+            isBeforeMinimumDate = (year <= currentYear && month <= currentMonth && day < currentDay) || (year <= currentYear && month <= currentMonth);
+        } else {
+            isBeforeMinimumDate = (year == currentYear && month < currentMonth);
+        }
+        return isBeforeMinimumDate || year < currentYear;
     }
 
     public Date getDate(String dateAsString) {
@@ -51,12 +58,19 @@ public class DateValidator {
         return date;
     }
 
-    public List<String> getDaysOfMonth(Integer year, Integer month) {
+    public List<String> getDaysOfMonth(Integer year, Integer month, Integer singleDay) {
         List<String> days = new LinkedList<>();
         YearMonth yearMonth = YearMonth.of(year, Month.of(month));
-        yearMonth.atDay(1)
-                .datesUntil(yearMonth.plusMonths(1).atDay(1))
-                .forEach(day -> days.add(day.toString() + "+0000"));
+        if (singleDay != null && singleDay <= 31) {
+            yearMonth.atDay(singleDay)
+                    .datesUntil(yearMonth.atDay(singleDay + 1))
+                    .forEach(day -> days.add(day.toString() + "+0000"));
+
+        } else {
+            yearMonth.atDay(1)
+                    .datesUntil(yearMonth.plusMonths(1).atDay(1))
+                    .forEach(day -> days.add(day.toString() + "+0000"));
+        }
         return days;
     }
 

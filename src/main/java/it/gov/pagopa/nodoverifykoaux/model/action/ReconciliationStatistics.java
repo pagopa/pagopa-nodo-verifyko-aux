@@ -20,4 +20,5 @@ public class ReconciliationStatistics implements Serializable {
     private ReconciliationHotColdComparation analyzed;
     private ReconciliationHotColdComparation succeeded;
     private ReconciliationHotColdComparation failed;
+    private ReconciliationHotColdComparation toReconcile;
 }

@@ -29,9 +29,6 @@ public class ColdStorageVerifyKO extends TableServiceEntity {
     private String diagnosticId;
     private Long eventTimestamp;
 
-    //@Transient
-    //private Map<String, Object> eventFromBlob;
-
     @Override
     public void readEntity(final HashMap<String, EntityProperty> properties, final OperationContext opContext) throws StorageException {
         super.readEntity(properties, opContext);

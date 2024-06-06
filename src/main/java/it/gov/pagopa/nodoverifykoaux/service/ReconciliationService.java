@@ -63,28 +63,28 @@ public class ReconciliationService {
                         .startedAt(startTime)
                         .endedAt(endTime)
                         .analyzed(ReconciliationHotColdComparation.builder()
-                                .fromColdToHot(coldToHotReconciledEvents.size())
-                                .fromHotToCold(hotToColdReconciledEvents.size())
+                                .inHotStorage(coldToHotReconciledEvents.size())
+                                .inColdStorage(hotToColdReconciledEvents.size())
                                 .build())
                         .succeeded(ReconciliationHotColdComparation.builder()
-                                .fromColdToHot((int) (coldToHotSuccess))
-                                .fromHotToCold((int) (hotToColdSuccess))
+                                .inHotStorage((int) (coldToHotSuccess))
+                                .inColdStorage((int) (hotToColdSuccess))
                                 .build())
                         .failed(ReconciliationHotColdComparation.builder()
-                                .fromColdToHot((int) (coldToHotReconciledEvents.size() - coldToHotSuccess))
-                                .fromHotToCold((int) (hotToColdReconciledEvents.size() - hotToColdSuccess))
+                                .inHotStorage((int) (coldToHotReconciledEvents.size() - coldToHotSuccess))
+                                .inColdStorage((int) (hotToColdReconciledEvents.size() - hotToColdSuccess))
                                 .build())
                         .build())
                 .overview(ReconciliationData.builder()
                         .date(date)
                         .usedDateForSearch(stringedDate)
-                        .fromColdToHotStorage(coldToHotReconciledEvents)
-                        .fromHotToColdStorage(hotToColdReconciledEvents)
+                        .inHotStorage(coldToHotReconciledEvents)
+                        .inColdStorage(hotToColdReconciledEvents)
                         .build())
                 .build();
     }
 
-    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachTimeFrame) {
+    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachTimeFrame, Boolean includeEventsInReport) {
 
         Date startTime = Calendar.getInstance().getTime();
 
@@ -115,10 +115,16 @@ public class ReconciliationService {
             log.info(String.format("Analyzing time section [%d-%d]. Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", dateLowerBoundTimestamp, dateUpperBoundTimestamp, coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
 
             // Reconcile events from cold storage to hot storage and retrieve the list of status info for each persisted event
-            coldToHotReconciledEvents.addAll(reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate));
+            List<ReconciledEventStatus> insertedInHotStorage = reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
 
             // Reconcile events from hot storage to cold storage and retrieve the list of status info for each persisted event
-            hotToColdReconciledEvents.addAll(reconcileEventsFromHotToColdStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate));
+            List<ReconciledEventStatus> insertedInColdStorage = reconcileEventsFromHotToColdStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
+
+            // include the whole list of reconciled events only if the flag is set as 'true'1
+            if (Boolean.TRUE.equals(includeEventsInReport)) {
+                coldToHotReconciledEvents.addAll(insertedInHotStorage);
+                hotToColdReconciledEvents.addAll(insertedInColdStorage);
+            }
 
             // Update batch counter and date bounds
             dateLowerBound = dateUpperBound;
@@ -128,7 +134,6 @@ public class ReconciliationService {
         // Last, return the general status for reconciliation operation
         return generateReconciliationStatus(coldToHotReconciledEvents, hotToColdReconciledEvents, startTime, date, stringedDate);
     }
-
 
     public ReconciliationEventStatus checkIfEventIsReconciled(String partitionKey, String rowKey, String timestamp) {
 
@@ -148,9 +153,9 @@ public class ReconciliationService {
         }
 
         // Retrieve data from storages using generated row keys
-        log.info(String.format("Retrieving event from hot storage using RowKey [%s]", hotStorageRowKey));
+        log.trace(String.format("Retrieving event from hot storage using RowKey [%s]", hotStorageRowKey));
         HotStorageVerifyKO eventInHotStorage = hotStorageRepo.findById(hotStorageRowKey);
-        log.info(String.format("Retrieving event from cold storage using RowKey [%s], PartitionKey [%s]", coldStorageRowKey, coldStoragePartitionKey));
+        log.trace(String.format("Retrieving event from cold storage using RowKey [%s], PartitionKey [%s]", coldStorageRowKey, coldStoragePartitionKey));
         ColdStorageVerifyKO eventInColdStorage = coldStorageRepo.findById(coldStorageRowKey, coldStoragePartitionKey);
 
         // Calculating final event status
@@ -187,7 +192,7 @@ public class ReconciliationService {
         List<ReconciledEventStatus> hotToColdReconciledEvents = new LinkedList<>();
         for (String eventID : eventIDsNotInColdStorage) {
 
-            log.info(String.format("Analyzing event with ID [%s] from hot storage.", eventID));
+            log.trace(String.format("Analyzing event with ID [%s] from hot storage.", eventID));
 
             // Initialize data for reconciled event status object
             ReconciledEventState reconciliationStatus = ReconciledEventState.SUCCESS;
@@ -230,7 +235,7 @@ public class ReconciliationService {
                 // Generate a new reconciled event status object and insert it in the final list
                 hotToColdReconciledEvents.add(ReconciledEventStatus.builder()
                         .eventReconciledFromOtherStorage(eventID)
-                        .newEventInserted(eventInserted)
+                        .eventInThisStorage(eventInserted)
                         .status(reconciliationStatus)
                         .cause(errorCause)
                         .build());
@@ -252,7 +257,7 @@ public class ReconciliationService {
         List<ReconciledEventStatus> coldToHotReconciledEvents = new LinkedList<>();
         for (ConvertedKey convertedKey : eventIDsNotInHotStorage) {
 
-            log.info(String.format("Analyzing event with ID [%s] from cold storage.", convertedKey.getRowKey()));
+            log.trace(String.format("Analyzing event with ID [%s] from cold storage.", convertedKey.getRowKey()));
 
             // Initialize data for reconciled event status object
             ReconciledEventState reconciliationStatus = ReconciledEventState.SUCCESS;
@@ -289,7 +294,7 @@ public class ReconciliationService {
                 // Generate a new reconciled event status object and insert it in the final list
                 coldToHotReconciledEvents.add(ReconciledEventStatus.builder()
                         .eventReconciledFromOtherStorage(convertedKey.getRowKey())
-                        .newEventInserted(eventInserted)
+                        .eventInThisStorage(eventInserted)
                         .status(reconciliationStatus)
                         .cause(errorCause)
                         .build());

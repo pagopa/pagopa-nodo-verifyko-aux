@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -39,6 +37,19 @@ public class TableStorageRepository {
         Iterable<ColdStorageVerifyKO> result = table.execute(query);
         result.forEach(entity -> ids.add(entity.getRowKey()));
         return ids;
+    }
+
+    public List<ColdStorageVerifyKO> getByDate(String partitionKey, Long dateLowerBound, Long dateUpperBound) {
+        List<ColdStorageVerifyKO> entities = new LinkedList<>();
+        String queryWhereClausePartitionKey = TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, partitionKey);
+        String queryWhereClauseDateTimeLowerBound = TableQuery.generateFilterCondition("timestamp", TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, dateLowerBound);
+        String queryWhereClauseDateTimeUpperBound = TableQuery.generateFilterCondition("timestamp", TableQuery.QueryComparisons.LESS_THAN_OR_EQUAL, dateUpperBound);
+        String queryWhereClauseDateTime = TableQuery.combineFilters(queryWhereClauseDateTimeLowerBound, TableQuery.Operators.AND, queryWhereClauseDateTimeUpperBound);
+        String queryWhereClause = TableQuery.combineFilters(queryWhereClausePartitionKey, TableQuery.Operators.AND, queryWhereClauseDateTime);
+        TableQuery<ColdStorageVerifyKO> query = TableQuery.from(ColdStorageVerifyKO.class).where(queryWhereClause);
+        Iterable<ColdStorageVerifyKO> result = table.execute(query);
+        result.forEach(entities::add);
+        return entities;
     }
 
     public ColdStorageVerifyKO findById(String rowKey, String partitionKey) {
