@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-nodo-verifyko-aux
-    tag: "0.2.2-6-NOD-933-verify-ko-lost-events"
+    tag: "0.2.2-7-NOD-933-verify-ko-lost-events"
     pullPolicy: Always
   livenessProbe:
     httpGet:
