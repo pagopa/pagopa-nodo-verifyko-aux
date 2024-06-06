@@ -12,7 +12,7 @@
 
     <groupId>it.gov.pagopa</groupId>
     <artifactId>nodo-verifyko-aux</artifactId>
-    <version>0.2.2-7-NOD-933-verify-ko-lost-events</version>
+    <version>0.2.3</version>
     <name>pagoPA Nodo VerifyKO Auxiliary tools</name>
     <description>A service that permits to handle stored Verify KO events in hot-storage and cold-storage.</description>
 
