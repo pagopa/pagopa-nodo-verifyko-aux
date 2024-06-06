@@ -4,7 +4,7 @@
     "description": "@project.description@",
     "termsOfService": "https://www.pagopa.gov.it/",
     "title": "nodo-verifyko-aux",
-    "version": "0.2.3"
+    "version": "0.2.4"
   },
   "servers": [
     {
