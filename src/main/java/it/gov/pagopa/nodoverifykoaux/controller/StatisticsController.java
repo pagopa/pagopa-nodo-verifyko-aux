@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 @Slf4j
 @RestController
 @Tag(name = "Statistics", description = "Everything about statistics on Verify KO events")
@@ -52,9 +55,9 @@ public class StatisticsController {
             @Parameter(description = "The year on which the report extraction will be executed.", example = "2020", required = true)
             @RequestParam Integer year,
             @Parameter(description = "The month on which the report extraction will be executed, within four months from today.", example = "1", required = true)
-            @RequestParam Integer month,
+            @RequestParam @Min(1) @Max(12) Integer month,
             @Parameter(description = "The day on which the report extraction will be executed, from yesterday.")
-            @RequestParam(required = false) Integer day) {
+            @RequestParam(required = false) @Min(1) @Max(31) Integer day) {
 
         DataReport dataReport = statisticsService.extractReportFromHotStorage(year, month, day);
 
@@ -84,9 +87,9 @@ public class StatisticsController {
             @Parameter(description = "The year on which the report extraction will be executed.", example = "2020", required = true)
             @RequestParam Integer year,
             @Parameter(description = "The month on which the report extraction will be executed.", example = "1", required = true)
-            @RequestParam Integer month,
+            @RequestParam @Min(1) @Max(12) Integer month,
             @Parameter(description = "The day on which the report extraction will be executed, from yesterday.")
-            @RequestParam(required = false) Integer day) {
+            @RequestParam(required = false) @Min(1) @Max(31) Integer day) {
 
         DataReport dataReport = statisticsService.extractReportFromColdStorage(year, month, day);
 
