@@ -84,37 +84,7 @@ public class ReconciliationService {
                 .build();
     }
 
-
-    private static ReconciliationStatus generateReconciliationStatus(Set<String> coldToHotReconciledEvents, Set<String> hotToColdReconciledEvents, long inColdStorage, long inHotStorage, Date startTime, String date, String stringedDate) {
-        Date endTime = Calendar.getInstance().getTime();
-        return ReconciliationStatus.builder()
-                .statistics(ReconciliationStatistics.builder()
-                        .startedAt(startTime)
-                        .endedAt(endTime)
-                        .analyzed(ReconciliationHotColdComparation.builder()
-                                .inColdStorage(inColdStorage)
-                                .inHotStorage(inHotStorage)
-                                .build()
-                        )
-                        .toReconcile(ReconciliationHotColdComparation.builder()
-                                .inHotStorage(coldToHotReconciledEvents.size())
-                                .inColdStorage(hotToColdReconciledEvents.size())
-                                .build())
-                        .build())
-                .overview(ReconciliationData.builder()
-                        .date(date)
-                        .usedDateForSearch(stringedDate)
-                        .inHotStorage(coldToHotReconciledEvents.stream()
-                                .map(id -> new ReconciledEventStatus(null, id, ReconciledEventState.TO_RECONCILE, null))
-                                .toList())
-                        .inColdStorage(hotToColdReconciledEvents.stream()
-                                .map(id -> new ReconciledEventStatus(null, id, ReconciledEventState.TO_RECONCILE, null))
-                                .toList())
-                        .build())
-                .build();
-    }
-
-    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachTimeFrame) {
+    public ReconciliationStatus reconcileEventsByDate(String date, Long minutesForEachTimeFrame, Boolean includeEventsInReport) {
 
         Date startTime = Calendar.getInstance().getTime();
 
@@ -145,10 +115,16 @@ public class ReconciliationService {
             log.info(String.format("Analyzing time section [%d-%d]. Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", dateLowerBoundTimestamp, dateUpperBoundTimestamp, coldStorageIDsForDate.size(), hotStorageIDsForDate.size(), date, stringedDate));
 
             // Reconcile events from cold storage to hot storage and retrieve the list of status info for each persisted event
-            coldToHotReconciledEvents.addAll(reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate));
+            List<ReconciledEventStatus> insertedInHotStorage = reconcileEventsFromColdToHotStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
 
             // Reconcile events from hot storage to cold storage and retrieve the list of status info for each persisted event
-            hotToColdReconciledEvents.addAll(reconcileEventsFromHotToColdStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate));
+            List<ReconciledEventStatus> insertedInColdStorage = reconcileEventsFromHotToColdStorage(coldStorageIDsForDate, hotStorageIDsForDate, stringedDate);
+
+            // include the whole list of reconciled events only if the flag is set as 'true'1
+            if (Boolean.TRUE.equals(includeEventsInReport)) {
+                coldToHotReconciledEvents.addAll(insertedInHotStorage);
+                hotToColdReconciledEvents.addAll(insertedInColdStorage);
+            }
 
             // Update batch counter and date bounds
             dateLowerBound = dateUpperBound;
