@@ -111,7 +111,7 @@ public class StatisticsService {
             log.info(String.format("Extracting report data from day [%s].", day));
             DailyDataReport dailyDataReport = new DailyDataReport(day);
 
-            String stringedDate = day.replace("-0", "").replace("-", "").replace("+0000", "");
+            String stringedDate = day.replace("-0", "");
 
             Date dateLowerBound = dateValidator.getDate(day);
             long batchCounter = 1;
