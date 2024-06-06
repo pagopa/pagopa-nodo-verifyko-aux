@@ -201,64 +201,6 @@ public class ReconciliationService {
                 .build();
     }
 
-    public ReconciliationStatus getEventsToReconcileByDate(String date, Long minutesForEachTimeFrame) {
-
-        Date startTime = Calendar.getInstance().getTime();
-
-        // Execute checks on date and convert it in required format
-        String utcDate = date + "+0000";
-        if (!dateValidator.isValid(utcDate)) {
-            throw new AppException(AppError.BAD_REQUEST_INVALID_DATE, date);
-        }
-        String stringedDate = date.replace("-0", "-");
-
-        // Initialize status data
-        Set<String> eventsToReconcileInHotStorage = new HashSet<>();
-        Long totalEventsInColdStorage = 0L;
-        Set<String> eventsToReconcileInColdStorage = new HashSet<>();
-        Long totalEventsInHotStorage = 0L;
-        Date dateLowerBound = dateValidator.getDate(utcDate);
-
-        long batchCounter = 1;
-        while (!isComputationEnded(date, dateLowerBound)) {
-
-            Date dateUpperBound = dateValidator.getDate(utcDate, minutesForEachTimeFrame * batchCounter);
-            Long dateLowerBoundTimestamp = dateLowerBound.getTime() / 1000;
-            Long dateUpperBoundTimestamp = dateUpperBound.getTime() / 1000;
-
-            // Retrieving IDs by date either from cold storage and from hot storage
-            Set<String> coldStorageIDsForDate = coldStorageRepo.getIDsByDate(stringedDate, dateLowerBoundTimestamp, dateUpperBoundTimestamp).stream()
-                    .map(ConvertedKey::new)
-                    .map(ConvertedKey::getAdaptedKey)
-                    .collect(Collectors.toSet());
-            long coldStorageElements = coldStorageIDsForDate.size();
-            Set<String> hotStorageIDsForDate = hotStorageRepo.getIDsByDate(CommonUtility.generatePartitionKeyForHotStorage(stringedDate), dateLowerBoundTimestamp, dateUpperBoundTimestamp);
-            long hotStorageElements = hotStorageIDsForDate.size();
-            log.info(String.format("Analyzing time section [%d-%d]. Found [%d] elements in the cold storage and [%d] in the hot storage for the date [%s] (searched as [%s])", dateLowerBoundTimestamp, dateUpperBoundTimestamp, coldStorageElements, hotStorageElements, date, stringedDate));
-
-            // Populate the list of events that are in cold storage but not in hot storage
-            Set<String> eventIDsNotInHotStorage = coldStorageIDsForDate.stream()
-                    .filter(adaptedKey -> !hotStorageIDsForDate.contains(adaptedKey))
-                    .collect(Collectors.toUnmodifiableSet());
-            eventsToReconcileInHotStorage.addAll(eventIDsNotInHotStorage);
-            totalEventsInHotStorage += hotStorageElements;
-
-            // Populate the list of events that are in hot storage but not in cold storage
-            Set<String> eventIDsNotInColdStorage = hotStorageIDsForDate.stream()
-                    .filter(id -> !coldStorageIDsForDate.contains(id))
-                    .collect(Collectors.toUnmodifiableSet());
-            eventsToReconcileInColdStorage.addAll(eventIDsNotInColdStorage);
-            totalEventsInColdStorage += coldStorageElements;
-
-            // Update batch counter and date bounds
-            dateLowerBound = dateUpperBound;
-            batchCounter++;
-        }
-
-        // Last, return the general status for reconciliation operation
-        return generateReconciliationStatus(eventsToReconcileInHotStorage, eventsToReconcileInColdStorage, totalEventsInColdStorage, totalEventsInHotStorage, startTime, date, stringedDate);
-    }
-
     private List<ReconciledEventStatus> reconcileEventsFromHotToColdStorage(Set<ConvertedKey> coldStorageIDs, Set<String> hotStorageIDs, String stringedDate) {
 
         // Extract the list of event IDs that are present in hot storage but not present in cold storage
