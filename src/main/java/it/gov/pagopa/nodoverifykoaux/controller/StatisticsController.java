@@ -59,7 +59,39 @@ public class StatisticsController {
         DataReport dataReport = statisticsService.extractReportFromHotStorage(year, month, day);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=VerifyKO-Report-" + year + month + (day == null ? "X" : day) + ".json");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=VerifyKO_HotStorage_Report_" + year + "-" + month + "-" + (day == null ? "X" : day) + ".json");
+
+        String content = gsonMapper.toJson(dataReport);
+        ByteArrayResource resource = new ByteArrayResource(content.getBytes());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(content.length())
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .body(resource);
+    }
+
+    @GetMapping(value = "/reports/cold", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Export Verify KO report from Cold Storage",
+            description = "The API execute the export of a report about Verify KO events from cold-storage stored for the passed date or month.",
+            security = {@SecurityRequirement(name = "ApiKey")},
+            tags = {"Statistics"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Export extracted with success.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Void.class))),
+            @ApiResponse(responseCode = "400", description = "If passed date is invalid.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "If an error occurred during execution.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @OpenAPITableMetadata(external = false, cacheable = true)
+    public ResponseEntity<Resource> extractReportFromColdStorageByMonth(
+            @Parameter(description = "The year on which the report extraction will be executed.", example = "2020", required = true)
+            @RequestParam Integer year,
+            @Parameter(description = "The month on which the report extraction will be executed.", example = "1", required = true)
+            @RequestParam Integer month,
+            @Parameter(description = "The day on which the report extraction will be executed, from yesterday.")
+            @RequestParam(required = false) Integer day) {
+
+        DataReport dataReport = statisticsService.extractReportFromColdStorage(year, month, day);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=VerifyKO_ColdStorage_Report_" + year + "-" + month + "-" + (day == null ? "X" : day) + ".json");
 
         String content = gsonMapper.toJson(dataReport);
         ByteArrayResource resource = new ByteArrayResource(content.getBytes());

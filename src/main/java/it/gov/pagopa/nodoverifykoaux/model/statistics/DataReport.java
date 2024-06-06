@@ -19,10 +19,10 @@ import java.util.Map;
 public class DataReport implements Serializable {
     List<DailyDataReport> days;
     private long total;
-    private Map<String, Long> fault;
+    private Map<String, Long> status;
 
     public DataReport() {
-        this.fault = new HashMap<>();
+        this.status = new HashMap<>();
         this.days = new LinkedList<>();
     }
 
@@ -30,8 +30,8 @@ public class DataReport implements Serializable {
         this.days.add(dailyDataReport);
     }
 
-    public void addFault(String fault, Long value) {
-        this.fault.put(fault, this.fault.getOrDefault(fault, 0L) + value);
+    public void addStatus(String status, Long value) {
+        this.status.put(status, this.status.getOrDefault(status, 0L) + value);
     }
 
     public void addToTotal(long value) {
