@@ -64,7 +64,7 @@ microservice-chart:
   envConfig:
     WEBSITE_SITE_NAME: 'pagopanodoverifykoaux' # required to show cloud role name in application insights
     APPLICATIONINSIGHTS_ROLE_NAME: "pagopa-nodo-verifyko-aux"
-    ENV: 'aks-dev'
+    ENV: 'prod'
     APP_LOGGING_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'WARN'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
@@ -76,7 +76,7 @@ microservice-chart:
     VERIFYKO_HOTSTORAGE_ENABLEQUERYMETRICS: 'false'
     VERIFYKO_REPORT_MINUTESTIMEFRAME: '30'
     OTEL_SERVICE_NAME: "pagopa-nodo-verifyko-aux"
-    OTEL_RESOURCE_ATTRIBUTES: "service.environment=prod"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
