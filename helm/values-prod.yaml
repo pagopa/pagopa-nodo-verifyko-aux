@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-nodo-verifyko-aux
-    tag: "0.2.8"
+    tag: "0.2.9"
     pullPolicy: Always
   livenessProbe:
     httpGet:
