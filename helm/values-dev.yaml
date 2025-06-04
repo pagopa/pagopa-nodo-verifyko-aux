@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-nodo-verifyko-aux
-    tag: "0.2.9-4-PIDM-492-workload-identity-helm-7"
+    tag: "0.3.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
