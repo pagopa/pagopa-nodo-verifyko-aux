@@ -33,19 +33,15 @@ microservice-chart:
     path: /pagopa-nodo-verifyko-aux(/|$)(.*)
     servicePort: 8080
   serviceAccount:
-    name: "nodo-workload-identity"
-  azure:
-    workloadIdentityClientId: <workload-identity-client-id-set-automatically-by-gha>
+    create: false
+    annotations: {}
+    name: ""
   podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
   securityContext:
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
-    capabilities:
-      drop:
-        - all
   resources:
     requests:
       memory: "512Mi"
